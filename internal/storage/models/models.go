@@ -3,7 +3,7 @@ package models
 import "time"
 
 type TweetMongo struct {
-	ID        string    `bson:"_id"`
+	ID        int64       `bson:"_id"`
 	AuthorID  string    `bson:"author_id"`
 	Content   string    `bson:"content"`
 	CreatedAt time.Time `bson:"created_at"`

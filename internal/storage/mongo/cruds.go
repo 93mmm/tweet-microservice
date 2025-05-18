@@ -17,7 +17,7 @@ func (s *mongoStorage) WriteNewTweet(tweet *models.TweetMongo) error {
 	return nil
 }
 
-func (s *mongoStorage) UpdateTweet(id string, tweet *models.UpdateTweetMongo) (*models.TweetMongo, error) {
+func (s *mongoStorage) UpdateTweet(id int64, tweet *models.UpdateTweetMongo) (*models.TweetMongo, error) {
 	objId := bsonId{ID: id}
 
 	result := s.tweetsCollection().FindOneAndUpdate(context.TODO(),
@@ -34,11 +34,11 @@ func (s *mongoStorage) UpdateTweet(id string, tweet *models.UpdateTweetMongo) (*
 	return editedTweet, nil
 }
 
-func (s *mongoStorage) DeleteTweet(id string) error {
+func (s *mongoStorage) DeleteTweet(id int64) error {
 	return nil
 }
 
-func (s *mongoStorage) GetTweet(id string) (*models.TweetMongo, error) {
+func (s *mongoStorage) GetTweet(id int64) (*models.TweetMongo, error) {
 	objId := &bsonId{ID: id}
 	response := s.tweetsCollection().FindOne(context.TODO(), objId)
 

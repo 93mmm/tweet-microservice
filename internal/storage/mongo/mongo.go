@@ -2,9 +2,9 @@ package mongo
 
 import (
 	"context"
-	"log"
 	"github.com/93mmm/tweet-microservice/internal/config"
 	"github.com/93mmm/tweet-microservice/internal/storage/models"
+	"log"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -14,11 +14,11 @@ import (
 type Storage interface {
 	WriteNewTweet(tweet *models.TweetMongo) error
 
-	UpdateTweet(id string, tweet *models.UpdateTweetMongo) (*models.TweetMongo, error)
+	UpdateTweet(id int64, tweet *models.UpdateTweetMongo) (*models.TweetMongo, error)
 
-	DeleteTweet(id string) error
+	DeleteTweet(id int64) error
 
-	GetTweet(id string) (*models.TweetMongo, error)
+	GetTweet(id int64) (*models.TweetMongo, error)
 	Disconnect()
 	// GetTweets(tweet *models.TweetMongo) error
 }
@@ -28,7 +28,7 @@ type mongoStorage struct {
 }
 
 type bsonId struct {
-	ID string `bson:"_id"`
+	ID int64 `bson:"_id"`
 }
 
 func NewMongoStorage() (Storage, error) {
@@ -56,6 +56,6 @@ func (s *mongoStorage) tweetsCollection() *mongo.Collection {
 	return s.db.Database("tweet").Collection("tweets")
 }
 
-func IdToBson(id string) any {
+func IdToBson(id int64) any {
 	return &bsonId{ID: id}
 }

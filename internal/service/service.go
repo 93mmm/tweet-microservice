@@ -13,12 +13,12 @@ import (
 type TweetService interface {
 	CreateTweet(tweet *domain.Tweet) (*domain.Tweet, error)
 
-	GetTweetById(id string) (*domain.Tweet, error)
+	GetTweetByID(id int64) (*domain.Tweet, error)
 	// maybe tweet filter
 	// GetTweets(tweet *domain.Tweet) ([]*domain.Tweet, error)
 
-	UpdateTweet(id string, content string) (*domain.Tweet, error)
-	DeleteTweet(id string) error
+	UpdateTweet(id int64, content string) (*domain.Tweet, error)
+	DeleteTweet(id int64) error
 }
 
 type tweetService struct {
@@ -40,7 +40,7 @@ func NewTweetService(repo mongo.Storage) (TweetService, error) {
 }
 
 func (s *tweetService) CreateTweet(tweet *domain.Tweet) (*domain.Tweet, error) {
-	tweet.ID = s.sfnode.Generate().String()
+	tweet.ID = int64(s.sfnode.Generate())
 	tweet.CreatedAt = time.Now()
 
 	err := s.repo.WriteNewTweet(mapper.TweetToMongoModel(tweet))
@@ -51,7 +51,7 @@ func (s *tweetService) CreateTweet(tweet *domain.Tweet) (*domain.Tweet, error) {
 	return tweet, nil
 }
 
-func (s *tweetService) GetTweetById(id string) (*domain.Tweet, error) {
+func (s *tweetService) GetTweetByID(id int64) (*domain.Tweet, error) {
 	tweet, err := s.repo.GetTweet(id)
 
 	if err != nil {
@@ -64,7 +64,7 @@ func (s *tweetService) GetTweets(tweet *domain.Tweet) ([]*domain.Tweet, error) {
 	return make([]*domain.Tweet, 0), nil
 }
 
-func (s *tweetService) UpdateTweet(id string, content string) (*domain.Tweet, error) {
+func (s *tweetService) UpdateTweet(id int64, content string) (*domain.Tweet, error) {
 	tweet, err := s.repo.UpdateTweet(
 		id,
 		&models.UpdateTweetMongo{
@@ -79,7 +79,7 @@ func (s *tweetService) UpdateTweet(id string, content string) (*domain.Tweet, er
 	return mapper.MongoModelToTweet(tweet), nil
 }
 
-func (s *tweetService) DeleteTweet(id string) error {
+func (s *tweetService) DeleteTweet(id int64) error {
 	err := s.repo.DeleteTweet(id)
 
 	if err != nil {
