@@ -2,9 +2,8 @@ package mongo
 
 import (
 	"context"
-	"log"
-	"github.com/93mmm/tweet-microservice/internal/config"
 	"github.com/93mmm/tweet-microservice/internal/storage/models"
+	"log"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -12,27 +11,22 @@ import (
 )
 
 type Storage interface {
-	WriteNewTweet(tweet *models.TweetMongo) error
+	WriteNewTweet(ctx context.Context, tweet *models.TweetDocument) error
 
-	UpdateTweet(id string, tweet *models.UpdateTweetMongo) (*models.TweetMongo, error)
+	UpdateTweet(ctx context.Context, id int64, tweet *models.UpdateTweetDocument) (*models.TweetDocument, error)
 
-	DeleteTweet(id string) error
+	DeleteTweet(ctx context.Context, id int64) error
 
-	GetTweet(id string) (*models.TweetMongo, error)
+	GetTweet(ctx context.Context, id int64) (*models.TweetDocument, error)
 	Disconnect()
-	// GetTweets(tweet *models.TweetMongo) error
+	GetTweets(ctx context.Context, tweet *models.TweetDocument) error
 }
 
 type mongoStorage struct {
 	db *mongo.Client
 }
 
-type bsonId struct {
-	ID string `bson:"_id"`
-}
-
-func NewMongoStorage() (Storage, error) {
-	url := config.Mongo().ConnectionString()
+func NewMongoStorage(url string) (Storage, error) {
 	client, err := mongo.Connect(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
@@ -54,8 +48,4 @@ func (s *mongoStorage) Disconnect() {
 
 func (s *mongoStorage) tweetsCollection() *mongo.Collection {
 	return s.db.Database("tweet").Collection("tweets")
-}
-
-func IdToBson(id string) any {
-	return &bsonId{ID: id}
 }

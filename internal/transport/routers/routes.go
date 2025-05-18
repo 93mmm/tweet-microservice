@@ -12,7 +12,7 @@ func InitRoutes(r *gin.Engine, svc handlers.TweetHandler) {
 
 		router.POST("", svc.CreateTweet)
 
-		router.GET("/:id", svc.GetTweetById)
+		router.GET("/:id", svc.GetTweetByID)
 		router.GET("", svc.GetTweets)
 
 		router.PUT("/:id", svc.UpdateTweet)

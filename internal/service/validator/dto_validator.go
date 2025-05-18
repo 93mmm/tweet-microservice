@@ -6,16 +6,29 @@ import (
 )
 
 var (
-	InvalidAuthorID = errors.New("Invalid AuthorID")
-	InvalidContent = errors.New("Invalid Content")
+	InvalidAuthorID   = errors.New("Invalid AuthorID")
+	InvalidContent    = errors.New("Invalid Content")
+	InvalidTypePassed = errors.New("Invalid Type Passed")
 )
 
-func ValidateCreateRequest(t *dto.TweetCreateRequest) error {
-	if t.AuthorID == "" { // == 0
-		return InvalidAuthorID
+func ValidateRequest(t any) error {
+	switch v := t.(type) {
+	case *dto.CreateTweetRequest:
+		if len(v.AuthorID) == 0 {
+			return InvalidAuthorID
+		}
+		if len(v.Content) == 0 || len(v.Content) >= 280 {
+			return InvalidContent
+		}
+		return nil
+	case *dto.UpdateTweetRequest:
+		if len(v.Content) == 0 || len(v.Content) >= 280 {
+			return InvalidContent
+		}
+		return nil
+	case *dto.ListTweetsRequest:
+		return nil
+	default:
+		return InvalidTypePassed
 	}
-	if len(t.Content) == 0 || len(t.Content) >= 280 {
-		return InvalidContent
-	}
-	return nil
 }

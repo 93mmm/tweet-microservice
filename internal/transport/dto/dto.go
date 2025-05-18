@@ -4,16 +4,16 @@ import (
 	"time"
 )
 
-type TweetCreateRequest struct {
+type CreateTweetRequest struct {
 	AuthorID string `json:"author_id"`
 	Content  string `json:"content"`
 }
 
-type TweetUpdateRequest struct {
+type UpdateTweetRequest struct {
 	Content string `json:"content"`
 }
 
-type TweetListRequest struct {
+type ListTweetsRequest struct {
 	AuthorID string    `json:"author_id,omitempty"`
 	Limit    int       `json:"limit,omitempty"`
 	Offset   int       `json:"offset,omitempty"`
@@ -21,7 +21,7 @@ type TweetListRequest struct {
 }
 
 type TweetResponse struct {
-	ID        string    `json:"id"`
+	ID        int64     `json:"id"`
 	AuthorID  string    `json:"author_id"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
@@ -29,7 +29,7 @@ type TweetResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type TweetListResponse struct {
+type ListTweetsResponse struct {
 	Tweets []TweetResponse `json:"tweets"`
 	Count  int             `json:"count"`
 }

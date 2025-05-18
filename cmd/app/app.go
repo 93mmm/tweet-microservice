@@ -16,7 +16,9 @@ func Run() error {
 	router := gin.New()
 	middleware.SetupMiddleware(router)
 
-	storage, err := mongo.NewMongoStorage()
+	storage, err := mongo.NewMongoStorage(
+		config.Mongo().ConnectionString(),
+	)
 	if err != nil {
 		return err
 	}

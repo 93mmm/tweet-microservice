@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"net/http"
+
+	"github.com/93mmm/tweet-microservice/internal/httputil"
 	"github.com/93mmm/tweet-microservice/internal/mapper"
 	"github.com/93mmm/tweet-microservice/internal/service"
 	"github.com/93mmm/tweet-microservice/internal/service/validator"
 	"github.com/93mmm/tweet-microservice/internal/transport/dto"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,12 +17,12 @@ type TweetHandler interface {
 	UpdateTweet(ctx *gin.Context)
 	DeleteTweet(ctx *gin.Context)
 
-	GetTweetById(ctx *gin.Context)
+	GetTweetByID(ctx *gin.Context)
 	GetTweets(ctx *gin.Context)
 }
 
 /*
-									:::СВАГГЕР ДОКУМЕНТАЦИЯ ЧИСТА БЛЯ:::
+::: HAHA SWAGGER LOLOLOL :::
 POST /api/v1/tweets
 TweetCreateRequest
 TweetCreateResponce
@@ -49,75 +51,100 @@ func NewTweetHandler(svc service.TweetService) *tweetHandler {
 }
 
 func (h *tweetHandler) CreateTweet(ctx *gin.Context) {
-	dto := &dto.TweetCreateRequest{}
-	if err := ctx.ShouldBind(dto); err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err) // TODO: wrap to { "error": {error} }
+	req := &dto.CreateTweetRequest{}
+	if err := ctx.ShouldBind(req); err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
-	if err := validator.ValidateCreateRequest(dto); err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+	if err := validator.ValidateRequest(req); err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
 
-	tweet := mapper.CreateDTOToTweet(dto)
+	tweet := mapper.CreateRequestToTweet(req)
 
-	response, err := h.svc.CreateTweet(tweet)
+	createdTweet, err := h.svc.CreateTweet(tweet)
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
-	responseDTO := mapper.TweetToTweetDTO(response)
+	resp := mapper.TweetToTweetResponse(createdTweet)
 
-	ctx.JSON(http.StatusCreated, responseDTO)
+	ctx.JSON(http.StatusCreated, resp)
 }
 
-func (h *tweetHandler) GetTweetById(ctx *gin.Context) {
-	response, err := h.svc.GetTweetById(ctx.Param("id")) // TODO: param must be int64
+func (h *tweetHandler) GetTweetByID(ctx *gin.Context) {
+	id, err := httputil.GetIDParam(ctx)
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, response)
+	tweet, err := h.svc.GetTweetByID(id)
+	if err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
+		return
+	}
+
+	resp := mapper.TweetToTweetResponse(tweet)
+	ctx.JSON(http.StatusOK, resp)
 }
 
 // TODO: implement later
 func (h *tweetHandler) GetTweets(ctx *gin.Context) {
-	var dto dto.TweetListRequest
-
-	if err := ctx.ShouldBind(&dto); err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+	req := &dto.ListTweetsRequest{}
+	if err := ctx.ShouldBind(req); err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
+		return
+	}
+	if err := validator.ValidateRequest(req); err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto)
+	ctx.JSON(http.StatusNotImplemented, req)
 }
 
 func (h *tweetHandler) UpdateTweet(ctx *gin.Context) {
-	var dto dto.TweetUpdateRequest
-
-	if err := ctx.ShouldBind(&dto); err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+	req := &dto.UpdateTweetRequest{}
+	if err := ctx.ShouldBind(req); err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
+		return
+	}
+	if err := validator.ValidateRequest(req); err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
 
-	response, err := h.svc.UpdateTweet(ctx.Param("id"), dto.Content)
-
+	id, err := httputil.GetIDParam(ctx)
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, response)
+	tweet, err := h.svc.UpdateTweet(id, req.Content)
+	if err != nil {
+		httputil.Error(ctx, err, http.StatusBadRequest)
+		return
+	}
+
+	resp := mapper.TweetToTweetResponse(tweet)
+
+	ctx.JSON(http.StatusOK, resp)
 }
 
 func (h *tweetHandler) DeleteTweet(ctx *gin.Context) {
-	err := h.svc.DeleteTweet(ctx.Param("id"))
-
+	id, err := httputil.GetIDParam(ctx)
 	if err != nil {
-		ctx.AbortWithError(http.StatusNotFound, err)
+		httputil.Error(ctx, err, http.StatusBadRequest)
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	err = h.svc.DeleteTweet(id)
+	if err != nil {
+		httputil.Error(ctx, err, http.StatusNotFound)
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
 }

@@ -6,14 +6,14 @@ import (
 	"github.com/93mmm/tweet-microservice/internal/transport/dto"
 )
 
-func CreateDTOToTweet(t *dto.TweetCreateRequest) *domain.Tweet {
+func CreateRequestToTweet(t *dto.CreateTweetRequest) *domain.Tweet {
 	return &domain.Tweet{
 		AuthorID: t.AuthorID,
 		Content:  t.Content,
 	}
 }
 
-func MongoModelToTweet(t *models.TweetMongo) *domain.Tweet {
+func MongoModelToTweet(t *models.TweetDocument) *domain.Tweet {
 	return &domain.Tweet{
 		ID:        t.ID,
 		AuthorID:  t.AuthorID,
@@ -24,8 +24,8 @@ func MongoModelToTweet(t *models.TweetMongo) *domain.Tweet {
 	}
 }
 
-func TweetToMongoModel(t *domain.Tweet) *models.TweetMongo {
-	return &models.TweetMongo{
+func TweetToMongoModel(t *domain.Tweet) *models.TweetDocument {
+	return &models.TweetDocument{
 		ID:        t.ID,
 		AuthorID:  t.AuthorID,
 		Content:   t.Content,
@@ -35,7 +35,7 @@ func TweetToMongoModel(t *domain.Tweet) *models.TweetMongo {
 	}
 }
 
-func TweetToTweetDTO(t *domain.Tweet) *dto.TweetResponse {
+func TweetToTweetResponse(t *domain.Tweet) *dto.TweetResponse {
 	return &dto.TweetResponse{
 		ID:        t.ID,
 		AuthorID:  t.AuthorID,
