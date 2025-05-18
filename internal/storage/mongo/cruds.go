@@ -2,14 +2,16 @@ package mongo
 
 import (
 	"context"
+	"errors"
+
 	"github.com/93mmm/tweet-microservice/internal/storage/models"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func (s *mongoStorage) WriteNewTweet(tweet *models.TweetMongo) error {
-	_, err := s.tweetsCollection().InsertOne(context.TODO(), tweet)
+func (s *mongoStorage) WriteNewTweet(ctx context.Context, tweet *models.TweetDocument) error {
+	_, err := s.tweetsCollection().InsertOne(ctx, tweet)
 	if err != nil {
 		return err
 	}
@@ -17,40 +19,43 @@ func (s *mongoStorage) WriteNewTweet(tweet *models.TweetMongo) error {
 	return nil
 }
 
-func (s *mongoStorage) UpdateTweet(id int64, tweet *models.UpdateTweetMongo) (*models.TweetMongo, error) {
-	objId := bsonId{ID: id}
-
-	result := s.tweetsCollection().FindOneAndUpdate(context.TODO(),
-		objId,
+func (s *mongoStorage) UpdateTweet(ctx context.Context, id int64, tweet *models.UpdateTweetDocument) (*models.TweetDocument, error) {
+	result := s.tweetsCollection().FindOneAndUpdate(
+		ctx,
+		bson.M{"_id": id},
 		bson.M{"$set": tweet},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
 
-	editedTweet := &models.TweetMongo{}
-	if err := result.Decode(editedTweet); err != nil {
+	model := &models.TweetDocument{}
+	if err := result.Decode(model); err != nil {
 		return nil, err
 	}
 
-	return editedTweet, nil
+	return model, nil
 }
 
-func (s *mongoStorage) DeleteTweet(id int64) error {
-	return nil
+// TODO: implement
+func (s *mongoStorage) DeleteTweet(ctx context.Context, id int64) error {
+	return errors.New("unimplemented")
 }
 
-func (s *mongoStorage) GetTweet(id int64) (*models.TweetMongo, error) {
-	objId := &bsonId{ID: id}
-	response := s.tweetsCollection().FindOne(context.TODO(), objId)
+func (s *mongoStorage) GetTweet(ctx context.Context, id int64) (*models.TweetDocument, error) {
+	response := s.tweetsCollection().FindOne(
+		ctx,
+		bson.M{"_id": id},
+	)
 
-	tweet := &models.TweetMongo{}
-	err := response.Decode(tweet)
+	model := &models.TweetDocument{}
+	err := response.Decode(model)
 	if err != nil {
 		return nil, err
 	}
 
-	return tweet, nil
+	return model, nil
 }
 
-func (s *mongoStorage) GetTweets(tweet *models.TweetMongo) error {
-	return nil
+// TODO: implement
+func (s *mongoStorage) GetTweets(ctx context.Context, tweet *models.TweetDocument) error {
+	return errors.New("unimplemented")
 }

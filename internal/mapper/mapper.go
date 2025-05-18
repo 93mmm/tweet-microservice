@@ -13,7 +13,7 @@ func CreateRequestToTweet(t *dto.CreateTweetRequest) *domain.Tweet {
 	}
 }
 
-func MongoModelToTweet(t *models.TweetMongo) *domain.Tweet {
+func MongoModelToTweet(t *models.TweetDocument) *domain.Tweet {
 	return &domain.Tweet{
 		ID:        t.ID,
 		AuthorID:  t.AuthorID,
@@ -24,8 +24,8 @@ func MongoModelToTweet(t *models.TweetMongo) *domain.Tweet {
 	}
 }
 
-func TweetToMongoModel(t *domain.Tweet) *models.TweetMongo {
-	return &models.TweetMongo{
+func TweetToMongoModel(t *domain.Tweet) *models.TweetDocument {
+	return &models.TweetDocument{
 		ID:        t.ID,
 		AuthorID:  t.AuthorID,
 		Content:   t.Content,

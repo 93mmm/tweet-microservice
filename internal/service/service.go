@@ -1,11 +1,13 @@
 package service
 
 import (
+	"context"
+	"time"
+
 	"github.com/93mmm/tweet-microservice/internal/mapper"
 	"github.com/93mmm/tweet-microservice/internal/service/domain"
 	"github.com/93mmm/tweet-microservice/internal/storage/models"
 	"github.com/93mmm/tweet-microservice/internal/storage/mongo"
-	"time"
 
 	"github.com/bwmarrin/snowflake"
 )
@@ -22,8 +24,8 @@ type TweetService interface {
 }
 
 type tweetService struct {
-	repo   mongo.Storage
-	sfnode *snowflake.Node
+	repo        mongo.Storage
+	idGenerator *snowflake.Node
 }
 
 func NewTweetService(repo mongo.Storage) (TweetService, error) {
@@ -32,18 +34,18 @@ func NewTweetService(repo mongo.Storage) (TweetService, error) {
 		return nil, err
 	}
 
-	// TODO: snowflake generated id == int64, rewrite all fields to int:)
 	return &tweetService{
-		repo:   repo,
-		sfnode: sfnode,
+		repo:        repo,
+		idGenerator: sfnode,
 	}, nil
 }
 
 func (s *tweetService) CreateTweet(tweet *domain.Tweet) (*domain.Tweet, error) {
-	tweet.ID = int64(s.sfnode.Generate())
+	tweet.ID = int64(s.idGenerator.Generate())
 	tweet.CreatedAt = time.Now()
 
-	err := s.repo.WriteNewTweet(mapper.TweetToMongoModel(tweet))
+	model := mapper.TweetToMongoModel(tweet)
+	err := s.repo.WriteNewTweet(context.TODO(), model)
 	if err != nil {
 		return nil, err
 	}
@@ -52,12 +54,13 @@ func (s *tweetService) CreateTweet(tweet *domain.Tweet) (*domain.Tweet, error) {
 }
 
 func (s *tweetService) GetTweetByID(id int64) (*domain.Tweet, error) {
-	tweet, err := s.repo.GetTweet(id)
-
+	model, err := s.repo.GetTweet(context.TODO(), id)
 	if err != nil {
 		return nil, err
 	}
-	return mapper.MongoModelToTweet(tweet), nil
+
+	tweet := mapper.MongoModelToTweet(model)
+	return tweet, nil
 }
 
 func (s *tweetService) GetTweets(tweet *domain.Tweet) ([]*domain.Tweet, error) {
@@ -65,9 +68,10 @@ func (s *tweetService) GetTweets(tweet *domain.Tweet) ([]*domain.Tweet, error) {
 }
 
 func (s *tweetService) UpdateTweet(id int64, content string) (*domain.Tweet, error) {
-	tweet, err := s.repo.UpdateTweet(
+	model, err := s.repo.UpdateTweet(
+		context.TODO(), 
 		id,
-		&models.UpdateTweetMongo{
+		&models.UpdateTweetDocument{
 			Content:   content,
 			IsEdited:  true,
 			UpdatedAt: time.Now(),
@@ -76,14 +80,15 @@ func (s *tweetService) UpdateTweet(id int64, content string) (*domain.Tweet, err
 		return nil, err
 	}
 
-	return mapper.MongoModelToTweet(tweet), nil
+	tweet := mapper.MongoModelToTweet(model)
+	return tweet, nil
 }
 
 func (s *tweetService) DeleteTweet(id int64) error {
-	err := s.repo.DeleteTweet(id)
-
+	err := s.repo.DeleteTweet(context.TODO(), id)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
