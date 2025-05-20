@@ -14,4 +14,6 @@ clean:
 	@rm -rf $(BUILD_DIR)
 
 up:
-	docker compose -f internal/deploy/docker-compose.yaml up --build
+	docker compose --env-file .env \
+		-f internal/deploy/docker-compose.yaml \
+		up --build

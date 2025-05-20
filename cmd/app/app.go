@@ -33,5 +33,7 @@ func Run() error {
 
 	server := application_server.NewServer(router, handler)
 
-	return server.StartApiServer("app:8080") // TODO: import host and port from config
+	return server.StartApiServer(
+		config.App().ConnectionString(),
+	)
 }

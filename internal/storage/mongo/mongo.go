@@ -13,13 +13,14 @@ import (
 type Storage interface {
 	WriteNewTweet(ctx context.Context, tweet *models.TweetDocument) error
 
-	UpdateTweet(ctx context.Context, id int64, tweet *models.UpdateTweetDocument) (*models.TweetDocument, error)
-
-	DeleteTweet(ctx context.Context, id int64) error
-
-	GetTweet(ctx context.Context, id int64) (*models.TweetDocument, error)
-	Disconnect()
+	GetTweet(ctx context.Context, id string) (*models.TweetDocument, error)
 	GetTweets(ctx context.Context, tweet *models.TweetDocument) error
+
+	UpdateTweet(ctx context.Context, id string, tweet *models.UpdateTweetDocument) (*models.TweetDocument, error)
+
+	DeleteTweet(ctx context.Context, id string) error
+
+	Disconnect()
 }
 
 type mongoStorage struct {

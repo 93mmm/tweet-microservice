@@ -7,6 +7,6 @@ import (
 func Error(ctx *gin.Context, err error, status int) {
 	ctx.AbortWithStatusJSON(
 		status,
-		gin.H{"error": err},
+		gin.H{"error": err.Error()},
 	)
 }

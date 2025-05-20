@@ -1,23 +1,23 @@
 services:
   app:
-    container_name: "app"
+    container_name: ${APP_HOST}
     build:
       context: ../..
       dockerfile: internal/deploy/Dockerfile
     ports:
-      - "8080:8080"
+      - "${APP_PORT}:${APP_PORT}"
     networks:
       - backend
 
   db:
-    container_name: "db"
+    container_name: ${MONGO_HOST}
     image: mongo
     restart: always
     command: mongod --quiet --logpath /dev/null
     volumes:
       - mongodb:/data/db
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}:${MONGO_PORT}"
     networks:
       - backend
 

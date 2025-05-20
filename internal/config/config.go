@@ -1,57 +1,43 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"sync"
 
 	"github.com/spf13/viper"
 )
 
-type mongoCfg struct {
-    Host string
-    Port int
-}
-
-func (c *mongoCfg) ConnectionString() string {
-    return fmt.Sprintf(
-		"mongodb://%v:%v",
-        c.Host,
-        c.Port,
-    )
-}
-
 type config struct {
-    Mongo mongoCfg
+	Mongo mongoCfg
+	App   appCfg
+}
+
+type hostPortConfig struct {
+	Host string
+	Port int
 }
 
 var (
-    once = sync.Once{}
-    cfg *config
+	once = sync.Once{}
+	cfg  *config
 )
 
 func Load() {
-    once.Do(loadConfig)
-}
-
-func Mongo() *mongoCfg {
-    return &cfg.Mongo
+	once.Do(loadConfig)
 }
 
 func loadConfig() {
-    viper.SetConfigName(".env")
-    viper.SetConfigType("yml")
-    viper.AddConfigPath(".")
+	viper.SetConfigFile(".env")
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatal("Can't read config file:", err)
+	}
 
-    err := viper.ReadInConfig()
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    cfg = &config{
-        Mongo: mongoCfg{
-            Host: viper.GetString("mongo.host"),
-            Port: viper.GetInt("mongo.port"),
-        },
-    }
+	cfg = &config{
+		Mongo: loadMongoCfg(),
+		App: loadAppCfg(),
+	}
+	if err := cfg.validate(); err != nil {
+		log.Fatal(err)
+	}
 }

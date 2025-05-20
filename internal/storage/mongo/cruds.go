@@ -19,7 +19,7 @@ func (s *mongoStorage) WriteNewTweet(ctx context.Context, tweet *models.TweetDoc
 	return nil
 }
 
-func (s *mongoStorage) UpdateTweet(ctx context.Context, id int64, tweet *models.UpdateTweetDocument) (*models.TweetDocument, error) {
+func (s *mongoStorage) UpdateTweet(ctx context.Context, id string, tweet *models.UpdateTweetDocument) (*models.TweetDocument, error) {
 	result := s.tweetsCollection().FindOneAndUpdate(
 		ctx,
 		bson.M{"_id": id},
@@ -36,18 +36,16 @@ func (s *mongoStorage) UpdateTweet(ctx context.Context, id int64, tweet *models.
 }
 
 // TODO: implement
-func (s *mongoStorage) DeleteTweet(ctx context.Context, id int64) error {
+func (s *mongoStorage) DeleteTweet(ctx context.Context, id string) error {
 	return errors.New("unimplemented")
 }
 
-func (s *mongoStorage) GetTweet(ctx context.Context, id int64) (*models.TweetDocument, error) {
-	response := s.tweetsCollection().FindOne(
+func (s *mongoStorage) GetTweet(ctx context.Context, id string) (*models.TweetDocument, error) {
+	model := &models.TweetDocument{}
+	err := s.tweetsCollection().FindOne(
 		ctx,
 		bson.M{"_id": id},
-	)
-
-	model := &models.TweetDocument{}
-	err := response.Decode(model)
+	).Decode(&model)
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 type Tweet struct {
-	ID        int64
+	ID        string
 	AuthorID  string
 	Content   string
 	CreatedAt time.Time
